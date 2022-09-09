@@ -1,0 +1,31 @@
+//this takes a simple publication title (with spaces) and turns it into a pubmed query. if it has one result, it will show the Pubmed ID, if it has none or many, it will show an error. May need to add an API key as well eventually.
+
+function getPMID(pub_title) {
+  //https://developers.google.com/apps-script/reference/url-fetch/http-response
+  // The code below logs the HTTP status code from the response received
+  // when fetching the Google home page.
+  // It should be 200 if the request succeeded.
+  //var response = UrlFetchApp.fetch("http://www.google.com/");
+  //Logger.log(response.getResponseCode());
+
+  var pub_title_cleaned = pub_title.replace(' ','+');
+
+  // The code below logs the HTML code of the Google home page.
+  //
+  //var response = UrlFetchApp.fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=35407167");
+  var response = UrlFetchApp.fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=" + pub_title_cleaned);
+  //return(response.getContentText());
+  // get XML 
+  var xml = response.getContentText();
+  var document = XmlService.parse(xml);
+  var root = document.getRootElement();
+  var idlist = root.getChild('IdList').getChildren("Id");
+  
+  if (idlist.length == 1){
+    return(root.getChild('IdList').getChild('Id').getText());
+  }
+  else{
+    return 'error';
+  }
+
+}
