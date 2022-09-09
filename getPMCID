@@ -1,0 +1,35 @@
+//takes a simple pubmed ID and returns the PMCID, could use it to pull other info associated with the PMID. will eventually need an api key for heavier API use.
+
+function getPMCID(pmid) {
+  //https://developers.google.com/apps-script/reference/url-fetch/http-response
+  // The code below logs the HTTP status code from the response received
+  // when fetching the Google home page.
+  // It should be 200 if the request succeeded.
+  //var response = UrlFetchApp.fetch("http://www.google.com/");
+  //Logger.log(response.getResponseCode());
+
+  // The code below logs the HTML code of the Google home page.
+  //
+  //var response = UrlFetchApp.fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=35407167");
+  var response = UrlFetchApp.fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=" + pmid);
+  //return(response.getContentText());
+  // get XML 
+  var xml = response.getContentText();
+
+  var document = XmlService.parse(xml);
+  var items = document.getRootElement().getChild('DocSum').getChildren('Item');
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    if (item.getAttribute('Name').getValue() == 'ArticleIds')
+    {
+      var sub_items = item.getChildren('Item');
+      for (var j = 0; j < sub_items.length; j++) {
+        var sub_item = sub_items[j];
+        if (sub_item.getAttribute('Name').getValue() == 'pmc'){
+          return (sub_item.getText());
+        }
+      }
+    }
+    
+  }
+}
